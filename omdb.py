@@ -14,6 +14,7 @@ def fetch_omdb(title):
         return _omdb_cache[title]
 
     if not OMDB_API_KEY:
+        print("WARNING: OMDB_API_KEY not set!")
         return None  
 
     try:
