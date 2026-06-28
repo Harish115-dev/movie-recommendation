@@ -113,6 +113,7 @@
       try {
         const res = await fetch('/api/recommend?movie=' + encodeURIComponent(movie));
         const data = await res.json();
+        console.log('API response:', data);
 
         if (!res.ok) {
           showStatus(data.error || 'Something went wrong.', 'error');
