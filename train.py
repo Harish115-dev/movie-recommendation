@@ -38,7 +38,7 @@ movie_text = movie_text.apply(preprocess)
 vectorizer = TfidfVectorizer(max_features=5000)
 vectors = vectorizer.fit_transform(movie_text)
 
-similarity = cosine_similarity(vectors, vectors)
+similarity = cosine_similarity(vectors, vectors).astype("float32")
 
 slim_data = data[["title", "tagline", "overview"]].reset_index(drop=True)
 
