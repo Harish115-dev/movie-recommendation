@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 from dotenv import load_dotenv
+import os
 
 load_dotenv()  
 
@@ -21,6 +22,7 @@ def api_titles():
 
 @app.route("/api/recommend")
 def api_recommend():
+    print("OMDB_API_KEY present:", bool(os.environ.get("OMDB_API_KEY")))
     movie_name = request.args.get("movie", "").strip()
     if not movie_name:
         return jsonify({"error": "Please provide a movie name"}), 400
