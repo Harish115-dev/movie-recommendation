@@ -19,6 +19,17 @@ def api_titles():
     titles = sorted(data["title"].tolist())
     return jsonify({"titles": titles})
 
+@app.route("/api/test-omdb")
+def test_omdb():
+    import requests, os
+    key = os.environ.get("OMDB_API_KEY")
+    if not key:
+        return jsonify({"error": "No API key found"})
+    try:
+        r = requests.get(f"https://www.omdbapi.com/?apikey={key}&t=inception", timeout=5)
+        return jsonify({"status": r.status_code, "body": r.json()})
+    except Exception as e:
+        return jsonify({"error": str(e)})
 
 @app.route("/api/recommend")
 def api_recommend():
