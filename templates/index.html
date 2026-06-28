@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Movie Recommender</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+  <header class="marquee">
+    <p class="eyebrow">Now Screening</p>
+    <h1>Pick a film, get your reel</h1>
+    <p class="tagline">Type a title you love. We'll line up ten more worth your night.</p>
+  </header>
+
+  <div class="sprockets" aria-hidden="true"></div>
+
+  <main>
+    <form id="search-form" class="ticket-counter">
+      <input id="search" placeholder="e.g. Inception" autocomplete="off" required>
+      <button type="submit" id="go">Recommend</button>
+    </form>
+
+    <div id="status" class="status" role="status" aria-live="polite"></div>
+    <div id="results" class="results-grid"></div>
+  </main>
+
+  <script>
+    const searchInput = document.getElementById('search');
+    const form = document.getElementById('search-form');
+    const statusEl = document.getElementById('status');
+    const resultsEl = document.getElementById('results');
+
+    const PLACEHOLDER_POSTER = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="445" viewBox="0 0 300 445">' +
+      '<rect width="300" height="445" fill="#241f2e"/>' +
+      '<text x="150" y="225" font-family="Inter, sans-serif" font-size="16" fill="#6b5f7a" text-anchor="middle">No poster on file</text>' +
+      '</svg>'
+    );
+
+    function showStatus(message, type) {
+      statusEl.textContent = message;
+      statusEl.className = 'status' + (type ? ' ' + type : '');
+    }
+
+    function clearStatus() {
+      statusEl.textContent = '';
+      statusEl.className = 'status';
+    }
+
+    function renderResults(results) {
+      resultsEl.innerHTML = '';
+      results.forEach(movie => {
+        const omdb = movie.omdb || {};
+        const posterUrl = (omdb.poster && omdb.poster !== 'N/A') ? omdb.poster : PLACEHOLDER_POSTER;
+        const rating = (omdb.rating && omdb.rating !== 'N/A') ? omdb.rating : '—';
+        const blurb = movie.tagline || movie.overview || 'No synopsis on file.';
+
+        const card = document.createElement('article');
+        card.className = 'card';
+
+        const posterImg = document.createElement('img');
+        posterImg.className = 'poster';
+        posterImg.src = posterUrl;
+        posterImg.alt = movie.title + ' poster';
+        posterImg.loading = 'lazy';
+
+        const sprockets = document.createElement('div');
+        sprockets.className = 'card-sprockets';
+        sprockets.setAttribute('aria-hidden', 'true');
+
+        const body = document.createElement('div');
+        body.className = 'card-body';
+
+        const top = document.createElement('div');
+        top.className = 'card-top';
+
+        const h3 = document.createElement('h3');
+        h3.textContent = movie.title;
+
+        const ratingSpan = document.createElement('span');
+        ratingSpan.className = 'rating';
+        ratingSpan.textContent = '\u2605 ' + rating;
+
+        const blurbP = document.createElement('p');
+        blurbP.className = 'blurb';
+        blurbP.textContent = blurb;
+
+        top.appendChild(h3);
+        top.appendChild(ratingSpan);
+        body.appendChild(top);
+        body.appendChild(blurbP);
+
+        card.appendChild(sprockets);
+        card.appendChild(posterImg);
+        card.appendChild(body);
+
+        resultsEl.appendChild(card);
+      });
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const movie = searchInput.value.trim();
+      if (!movie) return;
+
+      resultsEl.innerHTML = '';
+      showStatus('Pulling reels for "' + movie + '"\u2026');
+
+      try {
+        const res = await fetch('/api/recommend?movie=' + encodeURIComponent(movie));
+        const data = await res.json();
+
+        if (!res.ok) {
+          showStatus(data.error || 'Something went wrong.', 'error');
+          return;
+        }
+
+        if (data.matched_title && data.matched_title.toLowerCase() !== movie.toLowerCase()) {
+          showStatus('Showing results for "' + data.matched_title + '"');
+        } else {
+          clearStatus();
+        }
+
+        renderResults(data.results);
+      } catch (err) {
+        showStatus('Could not reach the projector room. Check the server and try again.', 'error');
+      }
+    });
+  </script>
+
+</body>
+</html>
