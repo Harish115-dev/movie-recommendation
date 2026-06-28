@@ -31,7 +31,10 @@ def api_recommend():
     if outcome is None:
         return jsonify({"error": f'"{movie_name}" not found in dataset'}), 404
 
-    return jsonify(outcome)
+    return jsonify({
+        "matched_title": movie_name,
+        "results": outcome
+    })
 
 
 if __name__ == "__main__":
