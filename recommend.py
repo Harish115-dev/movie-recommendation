@@ -9,7 +9,8 @@ MODEL_URL = "https://github.com/Harish115-dev/movie-recommendation/releases/down
 
 def load_model():
     if not os.path.exists(MODEL_PATH):
-        resp = requests.get(MODEL_URL, timeout=30)
+        print(f"Downloading model to {MODEL_PATH}...")
+        resp = requests.get(MODEL_URL, timeout=60) 
         resp.raise_for_status()
         with open(MODEL_PATH, "wb") as f:
             f.write(resp.content)

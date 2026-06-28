@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 OMDB_API_KEY = os.environ.get("OMDB_API_KEY")
-OMDB_URL = "http://www.omdbapi.com/"
+OMDB_URL = "https://www.omdbapi.com/"  
 
 _omdb_cache = {}  
 
